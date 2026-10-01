@@ -149,13 +149,17 @@ test('alerts trigger and are pushed over websocket', async () => {
   ws.on('message', (m) => messages.push(JSON.parse(m)));
   await new Promise((resolve, reject) => { ws.on('open', resolve); ws.on('error', reject); });
   ws.send(JSON.stringify({ type: 'sub', channel: 'book', symbol: 'AAPL' }));
+  // A resting limit order must be pushed to the client immediately.
+  const ko = (await api('GET', '/quotes?symbols=KO')).body.KO;
+  const resting = (await api('POST', '/orders', { symbol: 'KO', side: 'BUY', type: 'LMT', qty: 10, limitPrice: ko.bid * 0.8 })).body;
   const q = (await api('GET', '/quotes?symbols=GC1')).body.GC1;
   const a = await api('POST', '/alerts', { symbol: 'GC1', op: '>=', value: q.last * 0.5 });
   assert.equal(a.body.active, true);
   await new Promise((r) => setTimeout(r, 600));
   ws.close();
   const types = new Set(messages.map((m) => m.type));
-  for (const t of ['hello', 'quotes', 'book', 'alert']) assert.ok(types.has(t), `missing ${t} message`);
+  for (const t of ['hello', 'quotes', 'book', 'alert', 'order']) assert.ok(types.has(t), `missing ${t} message`);
+  assert.ok(messages.some((m) => m.type === 'order' && m.data.id === resting.id && m.data.status === 'WORKING'), 'resting order not pushed');
   const alerts = (await api('GET', '/alerts')).body;
   assert.equal(alerts[0].active, false);
 });

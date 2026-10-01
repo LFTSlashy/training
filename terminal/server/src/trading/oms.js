@@ -258,6 +258,8 @@ export class OrderManager extends EventEmitter {
       }
     }
     this.process(userId, order, true);
+    // Always announce the order (resting orders emit nothing from process()).
+    this.emit('order', userId, order);
     this.store.save();
     return order;
   }

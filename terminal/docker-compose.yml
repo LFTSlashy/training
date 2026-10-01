@@ -1,0 +1,14 @@
+services:
+  quanta:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      # Set a long random value in production (otherwise one is generated and stored in the data volume)
+      JWT_SECRET: ${JWT_SECRET:-}
+      DEMO_USER: ${DEMO_USER:-true}
+    volumes:
+      - quanta-data:/data
+    restart: unless-stopped
+volumes:
+  quanta-data:
