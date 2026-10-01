@@ -1,0 +1,15 @@
+{
+  "name": "quanta-terminal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "QUANTA — professional multi-asset trading terminal (Bloomberg-style) with real-time market engine, OMS and analytics",
+  "workspaces": ["server", "client"],
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "npm run build -w client",
+    "start": "npm run start -w server",
+    "test": "npm test -w server && npm run typecheck -w client",
+    "setup": "npm install && npm run build"
+  },
+  "engines": { "node": ">=18.17" }
+}
